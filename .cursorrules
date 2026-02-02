@@ -1,0 +1,272 @@
+# Godot 4.6 Web / Yandex Games Development .cursorrules
+
+## Project Scope & Priorities
+
+- Engine version: **Godot Engine 4.6**
+- Target platform: **HTML5 (WebAssembly + WebGL2)**
+- Distribution platform: **Yandex Games**
+- Project scale:
+  - Casual / arcade / hyper-casual
+  - Small to mid-size projects
+- Primary priorities:
+  - Web compatibility
+  - Stable HTML5 export
+  - Passing Yandex Games moderation
+  - Fast iteration and predictable behavior
+- Trade-offs:
+  - Prefer simplicity and robustness over architectural elegance
+  - Avoid overengineering and future-proof abstractions
+
+---
+
+## Core Development Guidelines
+
+- Use **strict typing** in all GDScript code
+- Use `@onready` annotations instead of direct node access in `_ready()`
+- Implement lifecycle functions explicitly:
+  - `_ready()`
+  - `_process()`
+  - `_physics_process()`
+  - `_exit_tree()`
+- Prefer **composition over inheritance**
+- Use signals for **meaningful state changes**, not per-frame logic
+- Keep logic explicit and readable
+- Favor boring, predictable solutions over clever ones
+
+---
+
+## Code Style
+
+- Use type hints for:
+  - All variables
+  - All function parameters
+  - All return values
+- Keep functions focused and readable
+- Prefer functions under ~40 lines, but **do not split logic artificially**
+- Document non-obvious behavior with concise comments
+- Group related properties and methods together
+
+---
+
+## Naming Conventions
+
+- Files: `snake_case.gd`, `snake_case.tscn`
+- Classes: `PascalCase` using `class_name`
+- Variables: `snake_case`
+- Constants: `ALL_CAPS_SNAKE_CASE`
+- Functions: `snake_case`
+- Enums:
+  - Enum name: `PascalCase`
+  - Enum values: `ALL_CAPS_SNAKE_CASE`
+- Nodes in scene tree: `PascalCase`
+- Signals:
+  - `snake_case`
+  - Past tense
+  - Describe completed events (e.g. `game_over`, `level_completed`)
+
+---
+
+## Scene Organization
+
+- Keep scene tree **shallow**
+- Avoid deep nesting and excessive indirection
+- Use scene inheritance sparingly
+- Prefer fewer, clearer scenes over many micro-scenes
+- Always free nodes explicitly using `queue_free()`
+- Use `SubViewport` only when strictly necessary (performance cost in Web)
+
+---
+
+## Scene Architecture for Web Builds
+
+- Centralize game flow in a single **GameManager** node
+- Avoid complex state machine frameworks for small projects
+- Prefer direct method calls over long signal chains
+- Avoid circular dependencies between scenes
+- No service locators
+- No dependency injection frameworks
+
+---
+
+## Signal Best Practices
+
+- Use signals for:
+  - Game flow events
+  - UI updates
+  - High-level state changes
+- Avoid signals for:
+  - Per-frame updates
+  - Tight gameplay loops
+- Use typed signals
+- Disconnect signals for long-lived nodes
+- Short-lived nodes may omit explicit disconnection if lifecycle is clear
+
+---
+
+## Web & HTML5 Constraints (CRITICAL)
+
+- Target: **HTML5 / WebAssembly**
+- Do NOT use:
+  - Threads
+  - `OS.execute()`
+  - `OS.shell_open()`
+  - Native plugins
+  - Platform-specific APIs
+- Use `user://` only for local persistence
+- Avoid large runtime allocations
+- Avoid reflection and dynamic execution
+- Assume limited memory and slower devices
+- Keep initial loading time minimal
+
+---
+
+## JavaScript ↔ Godot Bridge Rules
+
+- All JavaScript calls must go through `JavaScriptBridge`
+- Treat **all JS calls as asynchronous**
+- Never assume immediate return values
+- Do not block gameplay waiting for JS
+- Handle missing SDK or JS environment gracefully (local testing)
+- JavaScript errors must never crash the game
+
+---
+
+## Yandex Games SDK Integration
+
+- Game must initialize Yandex Games SDK on startup
+- Game must explicitly signal readiness:
+  - `gameReady`
+  - `loadingFinished`
+- SDK integration must not block game startup
+- Ads:
+  - Use **fullscreen interstitial ads only**
+  - Rewarded ads are optional and disabled by default
+- Show ads only at safe moments:
+  - Game over
+  - Level transition
+  - Session end
+- Pause gameplay and audio during ad playback
+- Resume safely after ad close or failure
+- Ad or SDK failure must never break gameplay
+
+---
+
+## Audio Rules (Web & Yandex)
+
+- Audio must start **only after user interaction**
+- Pause or mute audio when:
+  - Browser tab loses focus
+  - Game becomes hidden
+  - Advertisement is shown
+- Resume audio only after:
+  - Focus is restored
+  - User interaction (if required by browser)
+- Never rely on autoplay
+
+---
+
+## Focus & Visibility Handling
+
+- On focus loss:
+  - Pause gameplay
+  - Pause timers
+  - Pause audio
+- On focus restore:
+  - Resume safely
+- Do not assume `_process()` continues while tab is hidden
+
+---
+
+## Input Rules (Desktop + Mobile)
+
+- Support both:
+  - Mouse input
+  - Touch input
+- Do not rely on keyboard-only controls
+- Avoid hover-only interactions
+- UI elements must be touch-friendly (min 44x44px)
+- Input behavior must be consistent across:
+  - Desktop browsers
+  - Mobile browsers
+
+---
+
+## Mobile Performance (Critical)
+
+- Mobile traffic: 60%+ on Yandex.Игры
+- Test on real devices:
+  - iPhone SE (low-end iOS)
+  - Android Go / budget Android
+- Optimizations:
+  - Reduce particles and shaders for mobile
+  - Disable shadows on mobile
+  - Lower resolution textures on mobile
+- Handle throttling when app goes to background
+- Monitor battery drain (avoid busy loops)
+
+---
+
+## Performance Best Practices (Web)
+
+- Avoid spawning and freeing many nodes per frame
+- Use simple object pooling when necessary
+- Prefer PackedArrays over regular arrays
+- Minimize physics calculations
+- Use physics layers and masks efficiently
+
+---
+
+## Resource Management
+
+- Use `preload()` for essential resources
+- Use `load()` for optional resources
+- Avoid loading large assets at runtime
+- Clean up resources in `_exit_tree()` when needed
+- Keep total build size reasonable for web delivery
+
+---
+
+## Error Handling (Production Web)
+
+- Never crash the game due to:
+  - Missing SDK
+  - Ad failures
+  - JavaScript bridge errors
+- Use `assert()` only during development
+- Log errors silently in production builds
+- Always provide safe fallbacks
+
+---
+
+## TileMap Implementation (Godot 4.6)
+
+- `TileMap` node is deprecated
+- Use multiple `TileMapLayer` nodes instead
+- Convert legacy TileMaps using:
+  - TileMap bottom panel → “Extract TileMap layers”
+- Access navigation via:
+  - `TileMapLayer.get_navigation_map()`
+- Store layer-specific logic on individual `TileMapLayer` nodes
+
+---
+
+## Explicit Anti-Patterns (DO NOT)
+
+- No threads
+- No blocking waits for JavaScript
+- No deep inheritance trees
+- No unnecessary abstractions
+- No platform-specific hacks
+- No premature optimization
+- No architecture “for the future”
+
+---
+
+## Development Philosophy
+
+- Prefer simple, boring, working solutions
+- Optimize for:
+  - Fast iteration
+  - Predictable behavior
+  - Web stability
+- This project is shipped, not admired
