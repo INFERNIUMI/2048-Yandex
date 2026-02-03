@@ -1,0 +1,36 @@
+# Godot
+.godot/
+.import/
+*.import
+*.translation
+
+# Build
+build/
+dist/
+export/
+*.html
+*.js
+*.wasm
+*.pck
+*.zip
+
+# Temp
+*.tmp
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+.cursor/projects/
+
+# Godot cache
+*.cache
+.mono/
+
+# Backups
+*.old
+*.backup

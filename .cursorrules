@@ -311,3 +311,9 @@
 - Batch tool calls efficiently
 - No emoji spam
 - No marketing language
+
+## Codebase Indexing
+
+- .cursorignore excludes: .godot/, build/, *.import, *.html, *.wasm
+- Focus on: scripts/, scenes/ (only .gd and .tscn)
+- Ignore generated and exported files
