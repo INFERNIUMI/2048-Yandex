@@ -7,6 +7,7 @@ signal score_updated(points: int)
 signal game_over
 signal move_completed
 signal combo_triggered(multiplier: int)  # Для визуального эффекта
+signal game_over_settle_completed  # После micro-settle эффекта
 
 # Константы
 const GRID_SIZE: int = 4
@@ -16,9 +17,17 @@ const SPAWN_PROBABILITY_4: float = 0.1  # 10% шанс появления 4
 const DEBUG: bool = true
 
 # ===== ТЕСТОВАЯ ФИЧА: COMBO MULTIPLIER =====
-# Поменяйте на false, чтобы отключить Combo
 const FEATURE_COMBO_ENABLED: bool = true
 # ============================================
+
+# ===== ФИЧА: INPUT ANTICIPATION =====
+const FEATURE_INPUT_ANTICIPATION: bool = true
+# ====================================
+
+# ===== GAME OVER: Micro-Settle =====
+const GAME_OVER_SETTLE_SCALE: float = 0.90   # 2–3% уменьшение
+const GAME_OVER_SETTLE_DURATION: float = 0.30 # 150–250 ms
+# ===================================
 
 # Сетка плиток (двумерный массив)
 var tiles: Array[Array] = []
@@ -119,9 +128,10 @@ func _get_tile_position(x: int, y: int) -> Vector2:
 
 
 # Обработка хода (направление: UP, DOWN, LEFT, RIGHT)
-func process_move(direction: Vector2i) -> void:
+# Возвращает true если ход выполнен, false если ход невозможен
+func process_move(direction: Vector2i) -> bool:
 	if is_animating:
-		return
+		return false
 	
 	# ===== COMBO: сброс счётчиков перед ходом =====
 	if FEATURE_COMBO_ENABLED:
@@ -149,8 +159,8 @@ func process_move(direction: Vector2i) -> void:
 			_apply_combo_multiplier()
 		# ==================================================
 		
-		# Ждём окончания анимации
-		await get_tree().create_timer(0.15).timeout
+		# Ждём окончания анимации (merge до 160ms, move 120ms)
+		await get_tree().create_timer(0.17).timeout
 		
 		# Появляется новая плитка
 		_spawn_random_tile()
@@ -161,6 +171,8 @@ func process_move(direction: Vector2i) -> void:
 		# Проверка Game Over
 		if _is_game_over():
 			game_over.emit()
+	
+	return moved
 
 
 # Движение вверх
@@ -190,7 +202,7 @@ func _move_up() -> bool:
 					# Одинаковые значения - объединяем
 					var new_value: int = tiles[x][current_y - 1].value * 2
 					tiles[x][current_y - 1].set_value(new_value)
-					tiles[x][current_y - 1].animate_merge()
+					tiles[x][current_y - 1].animate_merge(new_value)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
@@ -236,7 +248,7 @@ func _move_down() -> bool:
 				elif tiles[x][current_y + 1].value == tiles[x][current_y].value and not merged[current_y + 1]:
 					var new_value: int = tiles[x][current_y + 1].value * 2
 					tiles[x][current_y + 1].set_value(new_value)
-					tiles[x][current_y + 1].animate_merge()
+					tiles[x][current_y + 1].animate_merge(new_value)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
@@ -282,7 +294,7 @@ func _move_left() -> bool:
 				elif tiles[current_x - 1][y].value == tiles[current_x][y].value and not merged[current_x - 1]:
 					var new_value: int = tiles[current_x - 1][y].value * 2
 					tiles[current_x - 1][y].set_value(new_value)
-					tiles[current_x - 1][y].animate_merge()
+					tiles[current_x - 1][y].animate_merge(new_value)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
@@ -328,7 +340,7 @@ func _move_right() -> bool:
 				elif tiles[current_x + 1][y].value == tiles[current_x][y].value and not merged[current_x + 1]:
 					var new_value: int = tiles[current_x + 1][y].value * 2
 					tiles[current_x + 1][y].set_value(new_value)
-					tiles[current_x + 1][y].animate_merge()
+					tiles[current_x + 1][y].animate_merge(new_value)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
@@ -370,6 +382,23 @@ func _is_game_over() -> bool:
 	
 	# Нет доступных ходов - Game Over
 	return true
+
+
+# Game Over: micro-settle — все плитки слегка уменьшаются (2–3%)
+func play_game_over_settle() -> void:
+	var tween: Tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.set_parallel(true)
+	
+	var target_scale: Vector2 = Vector2(GAME_OVER_SETTLE_SCALE, GAME_OVER_SETTLE_SCALE)
+	for x in GRID_SIZE:
+		for y in GRID_SIZE:
+			if tiles[x][y] != null:
+				tween.tween_property(tiles[x][y], "scale", target_scale, GAME_OVER_SETTLE_DURATION)
+	
+	tween.set_parallel(false)
+	tween.tween_callback(game_over_settle_completed.emit)
 
 
 # Revive: очистка маленьких плиток (2–3 самых маленьких)
@@ -417,6 +446,12 @@ func clear_small_tiles() -> void:
 		tween.tween_callback(tile.queue_free)
 		
 		tiles[x][y] = null
+	
+	# Сбрасываем scale оставшихся плиток (после Game Over settle)
+	for x in GRID_SIZE:
+		for y in GRID_SIZE:
+			if tiles[x][y] != null:
+				tiles[x][y].scale = Vector2.ONE
 	
 	if DEBUG:
 		print("[Grid] Revive: очищено %d плиток" % to_remove)

@@ -1,26 +1,26 @@
-[gd_scene load_steps=4 format=3 uid="uid://dqmvr5m4k7qfq"]
+[gd_scene format=3 uid="uid://dqmvr5m4k7qfq"]
 
-[ext_resource type="Script" path="res://scenes/game/game.gd" id="1_game"]
-[ext_resource type="Script" path="res://scripts/grid.gd" id="2_grid"]
-[ext_resource type="Script" path="res://scripts/input_handler.gd" id="3_input"]
+[ext_resource type="Script" uid="uid://b2yvtdhojr2ha" path="res://scenes/game/game.gd" id="1_game"]
+[ext_resource type="Script" uid="uid://d1630nlpyc4cq" path="res://scripts/grid.gd" id="2_grid"]
+[ext_resource type="Script" uid="uid://dwlytar34s61" path="res://scripts/input_handler.gd" id="3_input"]
 
-[node name="Game" type="Node2D"]
+[node name="Game" type="Node2D" unique_id=332474648]
 script = ExtResource("1_game")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=2040254989]
 offset_right = 720.0
 offset_bottom = 1280.0
 color = Color(0.980392, 0.968627, 0.941176, 1)
 
-[node name="UI" type="CanvasLayer" parent="."]
+[node name="UI" type="CanvasLayer" parent="." unique_id=729337414]
 
-[node name="TopPanel" type="Panel" parent="UI"]
+[node name="TopPanel" type="Panel" parent="UI" unique_id=895632797]
 offset_left = 20.0
 offset_top = 40.0
 offset_right = 700.0
 offset_bottom = 180.0
 
-[node name="Title" type="Label" parent="UI/TopPanel"]
+[node name="Title" type="Label" parent="UI/TopPanel" unique_id=1830029552]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 20.0
@@ -29,7 +29,7 @@ offset_bottom = 80.0
 theme_override_font_sizes/font_size = 48
 text = "2048"
 
-[node name="ScoreLabel" type="Label" parent="UI/TopPanel"]
+[node name="ScoreLabel" type="Label" parent="UI/TopPanel" unique_id=672091187]
 layout_mode = 0
 offset_left = 400.0
 offset_top = 20.0
@@ -39,7 +39,7 @@ theme_override_font_sizes/font_size = 18
 text = "SCORE"
 horizontal_alignment = 1
 
-[node name="ScoreValue" type="Label" parent="UI/TopPanel"]
+[node name="ScoreValue" type="Label" parent="UI/TopPanel" unique_id=2122607862]
 layout_mode = 0
 offset_left = 400.0
 offset_top = 50.0
@@ -49,7 +49,7 @@ theme_override_font_sizes/font_size = 36
 text = "0"
 horizontal_alignment = 1
 
-[node name="BestLabel" type="Label" parent="UI/TopPanel"]
+[node name="BestLabel" type="Label" parent="UI/TopPanel" unique_id=908001979]
 layout_mode = 0
 offset_left = 560.0
 offset_top = 20.0
@@ -59,7 +59,7 @@ theme_override_font_sizes/font_size = 18
 text = "BEST"
 horizontal_alignment = 1
 
-[node name="BestValue" type="Label" parent="UI/TopPanel"]
+[node name="BestValue" type="Label" parent="UI/TopPanel" unique_id=278670819]
 layout_mode = 0
 offset_left = 560.0
 offset_top = 50.0
@@ -69,7 +69,7 @@ theme_override_font_sizes/font_size = 36
 text = "0"
 horizontal_alignment = 1
 
-[node name="RestartButton" type="Button" parent="UI/TopPanel"]
+[node name="RestartButton" type="Button" parent="UI/TopPanel" unique_id=268000344]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 90.0
@@ -77,30 +77,13 @@ offset_right = 160.0
 offset_bottom = 130.0
 text = "Restart"
 
-[node name="GridContainer" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 20.0
-offset_top = 220.0
-offset_right = 700.0
-offset_bottom = 900.0
-
-[node name="GridBackground" type="Panel" parent="GridContainer"]
-layout_mode = 0
-offset_right = 680.0
-offset_bottom = 680.0
-
-[node name="Grid" type="Node2D" parent="GridContainer"]
-position = Vector2(20, 20)
-script = ExtResource("2_grid")
-
-[node name="UtilityBar" type="Panel" parent="UI"]
+[node name="UtilityBar" type="Panel" parent="UI" unique_id=250289493]
 offset_left = 20.0
 offset_top = 950.0
 offset_right = 700.0
 offset_bottom = 1050.0
 
-[node name="HBox" type="HBoxContainer" parent="UI/UtilityBar"]
+[node name="HBox" type="HBoxContainer" parent="UI/UtilityBar" unique_id=1400081446]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -109,32 +92,51 @@ offset_left = 10.0
 offset_top = 10.0
 offset_right = -10.0
 offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
 alignment = 1
 
-[node name="MusicButton" type="Button" parent="UI/UtilityBar/HBox"]
+[node name="MusicButton" type="Button" parent="UI/UtilityBar/HBox" unique_id=822996138]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "🎵 Music"
 
-[node name="SFXButton" type="Button" parent="UI/UtilityBar/HBox"]
+[node name="SFXButton" type="Button" parent="UI/UtilityBar/HBox" unique_id=799198349]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "🔊 SFX"
 
-[node name="HelpButton" type="Button" parent="UI/UtilityBar/HBox"]
+[node name="HelpButton" type="Button" parent="UI/UtilityBar/HBox" unique_id=1894581838]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "ℹ️ Help"
 
-[node name="UndoButton" type="Button" parent="UI/UtilityBar/HBox"]
+[node name="UndoButton" type="Button" parent="UI/UtilityBar/HBox" unique_id=640417598]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "↶ Undo"
 
-[node name="RestartButton2" type="Button" parent="UI/UtilityBar/HBox"]
+[node name="RestartButton2" type="Button" parent="UI/UtilityBar/HBox" unique_id=985804404]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "⟳ Restart"
 
-[node name="InputHandler" type="Node" parent="."]
+[node name="GridContainer" type="Control" parent="." unique_id=527233929]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 220.0
+offset_right = 700.0
+offset_bottom = 900.0
+
+[node name="GridBackground" type="Panel" parent="GridContainer" unique_id=96752145]
+layout_mode = 0
+offset_right = 680.0
+offset_bottom = 680.0
+
+[node name="Grid" type="Node2D" parent="GridContainer" unique_id=375720166]
+position = Vector2(20, 20)
+script = ExtResource("2_grid")
+
+[node name="InputHandler" type="Node" parent="." unique_id=1564980764]
 script = ExtResource("3_input")

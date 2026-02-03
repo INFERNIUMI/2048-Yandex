@@ -71,13 +71,42 @@ func animate_spawn() -> void:
 	tween.tween_property(self, "scale", Vector2.ONE, 0.1)
 
 
-# Анимация слияния (scale up to 1.1 then back to 1)
-func animate_merge() -> void:
+# =============================================================================
+# MERGE ANIMATION: Squash + Pop (настраиваемые параметры)
+# =============================================================================
+# Категории по "весу" плитки: большие числа ощущаются тяжелее
+const MERGE_SMALL_MAX_SCALE: float = 1.15   # 2–64
+const MERGE_SMALL_DURATION: float = 0.13
+const MERGE_MEDIUM_MAX_SCALE: float = 1.20 # 128–256
+const MERGE_MEDIUM_DURATION: float = 0.17
+const MERGE_LARGE_MAX_SCALE: float = 1.30  # 512+
+const MERGE_LARGE_DURATION: float = 0.20
+# =============================================================================
+
+# Анимация слияния: Squash + Pop (только результирующая плитка)
+# value — для weight-based: большие числа = сильнее эффект
+func animate_merge(tile_value: int = 2) -> void:
+	var max_scale_val: float
+	var duration: float
+	
+	if tile_value >= 512:
+		max_scale_val = MERGE_LARGE_MAX_SCALE
+		duration = MERGE_LARGE_DURATION
+	elif tile_value >= 128:
+		max_scale_val = MERGE_MEDIUM_MAX_SCALE
+		duration = MERGE_MEDIUM_DURATION
+	else:
+		max_scale_val = MERGE_SMALL_MAX_SCALE
+		duration = MERGE_SMALL_DURATION
+	
+	var half: float = duration * 0.5
+	var max_scale: Vector2 = Vector2(max_scale_val, max_scale_val)
+	
 	var tween: Tween = create_tween()
-	tween.set_ease(Tween.EASE_OUT)
-	tween.set_trans(Tween.TRANS_QUAD)
-	tween.tween_property(self, "scale", Vector2(1.1, 1.1), 0.05)
-	tween.tween_property(self, "scale", Vector2.ONE, 0.05)
+	# Фаза 1: scale up — ease-out (удар)
+	tween.tween_property(self, "scale", max_scale, half).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	# Фаза 2: scale down — ease-in (возврат)
+	tween.tween_property(self, "scale", Vector2.ONE, half).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
 
 
 # Анимация движения к новой позиции
