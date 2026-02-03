@@ -20,6 +20,7 @@ func _ready() -> void:
 	input_handler.move_input.connect(_on_move_input)
 	grid.score_updated.connect(_on_score_updated)
 	grid.game_over.connect(_on_game_over)
+	grid.combo_triggered.connect(_on_combo_triggered)  # COMBO: визуальный эффект
 	restart_button.pressed.connect(_on_restart_pressed)
 	
 	# Обновляем Best Score
@@ -153,3 +154,52 @@ func _show_revive_effect() -> void:
 func _on_restart_from_game_over(game_over_panel: Panel) -> void:
 	game_over_panel.queue_free()
 	_start_new_game()
+
+
+# ===== COMBO: визуальный эффект =====
+func _on_combo_triggered(multiplier: int) -> void:
+	var combo_label: Label = Label.new()
+	combo_label.text = "COMBO x%d" % multiplier
+	combo_label.add_theme_font_size_override("font_size", 64)
+	
+	# Цвет в зависимости от множителя
+	if multiplier == 3:
+		combo_label.modulate = Color(1, 0.2, 0.2, 1)  # Красный для x3
+	else:
+		combo_label.modulate = Color(1, 0.6, 0, 1)  # Оранжевый для x2
+	
+	combo_label.position = Vector2(180, 600)
+	
+	add_child(combo_label)
+	
+	# Анимация: появление, scale up, исчезновение
+	var tween: Tween = create_tween()
+	tween.set_parallel(true)
+	
+	# Scale эффект
+	combo_label.scale = Vector2(0.5, 0.5)
+	tween.tween_property(combo_label, "scale", Vector2(1.2, 1.2), 0.2)
+	tween.chain().tween_property(combo_label, "scale", Vector2.ONE, 0.1)
+	
+	# Fade out
+	tween.chain().tween_property(combo_label, "modulate:a", 0.0, 0.5).set_delay(0.3)
+	
+	# Движение вверх
+	tween.tween_property(combo_label, "position:y", 500.0, 1.0)
+	
+	tween.tween_callback(combo_label.queue_free).set_delay(1.0)
+	
+	# Импульс экрана (лёгкий shake)
+	_screen_pulse()
+
+
+# Лёгкий импульс экрана при Combo
+func _screen_pulse() -> void:
+	var original_position: Vector2 = position
+	var tween: Tween = create_tween()
+	
+	# Быстрый shake
+	tween.tween_property(self, "position", original_position + Vector2(5, 0), 0.05)
+	tween.tween_property(self, "position", original_position + Vector2(-5, 0), 0.05)
+	tween.tween_property(self, "position", original_position, 0.05)
+# ====================================

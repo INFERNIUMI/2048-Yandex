@@ -270,3 +270,44 @@
   - Predictable behavior
   - Web stability
 - This project is shipped, not admired
+
+---
+
+## Documentation & Context Control (CRITICAL)
+
+- **Do NOT create new .md files by default**
+- Documentation ONLY if:
+  - explicitly requested by user
+  - AND approved in current task
+- Prefer inline comments over standalone docs
+- Do NOT duplicate information across files
+- Do NOT generate speculative documents
+- Update existing docs instead of creating new ones
+
+## Context Usage & Token Optimization
+
+- Minimize token usage in all responses
+- Do NOT restate existing rules or docs
+- Reference rules implicitly, don't repeat them
+- Avoid verbose explanations
+- Prefer short, direct outputs
+- Do NOT create multiple alternatives
+- When editing: show only changed sections, not full files
+
+## Output Discipline
+
+- Code changes → modify existing files only
+- Documentation required → update existing doc
+- Never create multiple docs for same topic
+- Batch related changes in single edit
+- Use StrReplace efficiently (minimal context)
+
+## AI Response Optimization
+
+- Responses in Russian: be concise
+- Show code diffs, not full files
+- Skip explanations user already knows
+- No repeated confirmations ("готово", "сделано")
+- Batch tool calls efficiently
+- No emoji spam
+- No marketing language

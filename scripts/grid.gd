@@ -6,6 +6,7 @@ extends Node2D
 signal score_updated(points: int)
 signal game_over
 signal move_completed
+signal combo_triggered(multiplier: int)  # Для визуального эффекта
 
 # Константы
 const GRID_SIZE: int = 4
@@ -13,6 +14,11 @@ const TILE_SIZE: int = 150
 const TILE_SPACING: int = 20
 const SPAWN_PROBABILITY_4: float = 0.1  # 10% шанс появления 4
 const DEBUG: bool = true
+
+# ===== ТЕСТОВАЯ ФИЧА: COMBO MULTIPLIER =====
+# Поменяйте на false, чтобы отключить Combo
+const FEATURE_COMBO_ENABLED: bool = true
+# ============================================
 
 # Сетка плиток (двумерный массив)
 var tiles: Array[Array] = []
@@ -22,6 +28,11 @@ var tile_scene: PackedScene = null
 
 # Флаг анимации
 var is_animating: bool = false
+
+# ===== COMBO MULTIPLIER (тестовая фича) =====
+var merge_count_this_turn: int = 0  # Счётчик merge за текущий ход
+var points_accumulated_this_turn: int = 0  # Накопленные очки за ход
+# ============================================
 
 
 func _ready() -> void:
@@ -112,6 +123,12 @@ func process_move(direction: Vector2i) -> void:
 	if is_animating:
 		return
 	
+	# ===== COMBO: сброс счётчиков перед ходом =====
+	if FEATURE_COMBO_ENABLED:
+		merge_count_this_turn = 0
+		points_accumulated_this_turn = 0
+	# ==============================================
+	
 	var moved: bool = false
 	
 	# Обрабатываем движение в зависимости от направления
@@ -126,6 +143,11 @@ func process_move(direction: Vector2i) -> void:
 	
 	if moved:
 		is_animating = true
+		
+		# ===== COMBO: применяем множитель после хода =====
+		if FEATURE_COMBO_ENABLED:
+			_apply_combo_multiplier()
+		# ==================================================
 		
 		# Ждём окончания анимации
 		await get_tree().create_timer(0.15).timeout
@@ -170,7 +192,13 @@ func _move_up() -> bool:
 					tiles[x][current_y - 1].set_value(new_value)
 					tiles[x][current_y - 1].animate_merge()
 					
-					score_updated.emit(new_value)
+					# ===== COMBO: учитываем merge и накапливаем очки =====
+					if FEATURE_COMBO_ENABLED:
+						merge_count_this_turn += 1
+						points_accumulated_this_turn += new_value
+					else:
+						score_updated.emit(new_value)
+					# =====================================================
 					
 					tiles[x][current_y].queue_free()
 					tiles[x][current_y] = null
@@ -210,7 +238,13 @@ func _move_down() -> bool:
 					tiles[x][current_y + 1].set_value(new_value)
 					tiles[x][current_y + 1].animate_merge()
 					
-					score_updated.emit(new_value)
+					# ===== COMBO: учитываем merge и накапливаем очки =====
+					if FEATURE_COMBO_ENABLED:
+						merge_count_this_turn += 1
+						points_accumulated_this_turn += new_value
+					else:
+						score_updated.emit(new_value)
+					# =====================================================
 					
 					tiles[x][current_y].queue_free()
 					tiles[x][current_y] = null
@@ -250,7 +284,13 @@ func _move_left() -> bool:
 					tiles[current_x - 1][y].set_value(new_value)
 					tiles[current_x - 1][y].animate_merge()
 					
-					score_updated.emit(new_value)
+					# ===== COMBO: учитываем merge и накапливаем очки =====
+					if FEATURE_COMBO_ENABLED:
+						merge_count_this_turn += 1
+						points_accumulated_this_turn += new_value
+					else:
+						score_updated.emit(new_value)
+					# =====================================================
 					
 					tiles[current_x][y].queue_free()
 					tiles[current_x][y] = null
@@ -290,7 +330,13 @@ func _move_right() -> bool:
 					tiles[current_x + 1][y].set_value(new_value)
 					tiles[current_x + 1][y].animate_merge()
 					
-					score_updated.emit(new_value)
+					# ===== COMBO: учитываем merge и накапливаем очки =====
+					if FEATURE_COMBO_ENABLED:
+						merge_count_this_turn += 1
+						points_accumulated_this_turn += new_value
+					else:
+						score_updated.emit(new_value)
+					# =====================================================
 					
 					tiles[current_x][y].queue_free()
 					tiles[current_x][y] = null
@@ -383,3 +429,33 @@ func has_small_tiles() -> bool:
 			if tiles[x][y] != null and (tiles[x][y].value == 2 or tiles[x][y].value == 4):
 				return true
 	return false
+
+
+# ===== COMBO MULTIPLIER: применение множителя =====
+func _apply_combo_multiplier() -> void:
+	if merge_count_this_turn == 0:
+		return
+	
+	var multiplier: int = 1
+	
+	# Определяем множитель
+	if merge_count_this_turn >= 3:
+		multiplier = 3
+	elif merge_count_this_turn >= 2:
+		multiplier = 2
+	else:
+		multiplier = 1
+	
+	# Применяем множитель к очкам
+	var final_points: int = points_accumulated_this_turn * multiplier
+	
+	# Отправляем очки в GameManager
+	score_updated.emit(final_points)
+	
+	# Если есть Combo (x2 или x3) - отправляем сигнал для визуала
+	if multiplier >= 2:
+		combo_triggered.emit(multiplier)
+		
+		if DEBUG:
+			print("[Grid] COMBO x%d! (%d merges, %d points)" % [multiplier, merge_count_this_turn, final_points])
+# ==================================================
