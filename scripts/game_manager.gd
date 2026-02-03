@@ -14,6 +14,9 @@ var best_score: int = 0
 # Флаг использования revive
 var revive_used: bool = false
 
+# UNDO: 1 раз за игру
+var undo_used: bool = false
+
 # Флаг для отладки (включить для логов)
 const DEBUG: bool = true
 
@@ -42,7 +45,8 @@ func _init_yandex_sdk() -> void:
 # Начало новой игры
 func start_new_game() -> void:
 	current_score = 0
-	revive_used = false  # Сбрасываем флаг revive
+	revive_used = false
+	undo_used = false
 	game_started.emit()
 	
 	if DEBUG:
@@ -68,6 +72,13 @@ func trigger_game_over() -> void:
 	# Показываем рекламу после Game Over
 	if yandex_sdk:
 		yandex_sdk.show_fullscreen_ad()
+
+
+# UNDO: восстановить состояние
+func restore_undo_state(score: int, best: int) -> void:
+	current_score = score
+	best_score = best
+	_save_best_score()
 
 
 # Перезапуск игры

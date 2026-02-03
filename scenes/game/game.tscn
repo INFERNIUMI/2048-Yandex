@@ -94,5 +94,47 @@ offset_bottom = 680.0
 position = Vector2(20, 20)
 script = ExtResource("2_grid")
 
+[node name="UtilityBar" type="Panel" parent="UI"]
+offset_left = 20.0
+offset_top = 950.0
+offset_right = 700.0
+offset_bottom = 1050.0
+
+[node name="HBox" type="HBoxContainer" parent="UI/UtilityBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+alignment = 1
+
+[node name="MusicButton" type="Button" parent="UI/UtilityBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🎵 Music"
+
+[node name="SFXButton" type="Button" parent="UI/UtilityBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🔊 SFX"
+
+[node name="HelpButton" type="Button" parent="UI/UtilityBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ℹ️ Help"
+
+[node name="UndoButton" type="Button" parent="UI/UtilityBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "↶ Undo"
+
+[node name="RestartButton2" type="Button" parent="UI/UtilityBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "⟳ Restart"
+
 [node name="InputHandler" type="Node" parent="."]
 script = ExtResource("3_input")

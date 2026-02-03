@@ -96,8 +96,8 @@ func _get_empty_cells() -> Array[Vector2i]:
 	return empty
 
 
-# Создание плитки
-func _create_tile(x: int, y: int, value: int) -> void:
+# Создание плитки (animate=false для UNDO restore)
+func _create_tile(x: int, y: int, value: int, animate: bool = true) -> void:
 	var tile: Node2D = tile_scene.instantiate()
 	tile.position = _get_tile_position(x, y)
 	tile.set_value(value)
@@ -105,8 +105,8 @@ func _create_tile(x: int, y: int, value: int) -> void:
 	add_child(tile)
 	tiles[x][y] = tile
 	
-	# Анимация появления
-	tile.animate_spawn()
+	if animate:
+		tile.animate_spawn()
 
 
 # Получение позиции плитки на экране
@@ -420,6 +420,23 @@ func clear_small_tiles() -> void:
 	
 	if DEBUG:
 		print("[Grid] Revive: очищено %d плиток" % to_remove)
+
+
+# UNDO: сохранить состояние (массив [x, y, value])
+func get_state() -> Array:
+	var state: Array = []
+	for x in GRID_SIZE:
+		for y in GRID_SIZE:
+			if tiles[x][y] != null:
+				state.append([x, y, tiles[x][y].value])
+	return state
+
+
+# UNDO: восстановить состояние
+func restore_state(state: Array) -> void:
+	_clear_grid()
+	for cell in state:
+		_create_tile(cell[0], cell[1], cell[2], false)
 
 
 # Проверка, есть ли маленькие плитки для очистки
