@@ -129,6 +129,17 @@
 - Handle missing SDK or JS environment gracefully (local testing)
 - JavaScript errors must never crash the game
 
+### Example (correct)
+```gdscript
+func init_sdk() -> void:
+    JavaScriptBridge.eval("window.ysdk && window.ysdk.init && window.ysdk.init()")
+```
+
+### Example (wrong)
+```gdscript
+await JavaScriptBridge.eval("ysdk.init()")
+```
+
 ---
 
 ## Yandex Games SDK Integration
@@ -148,6 +159,16 @@
 - Pause gameplay and audio during ad playback
 - Resume safely after ad close or failure
 - Ad or SDK failure must never break gameplay
+
+### Example (correct)
+```gdscript
+func show_ad_safe() -> void:
+    get_tree().paused = true
+    JavaScriptBridge.eval("ysdk.adv.showFullscreenAdv({onClose: window._on_ad_end, onError: window._on_ad_end})")
+
+func _on_ad_end() -> void:
+    get_tree().paused = false
+```
 
 ---
 
@@ -238,15 +259,11 @@
 
 ---
 
-## TileMap Implementation (Godot 4.6)
+## TileMap (Godot 4.6)
 
-- `TileMap` node is deprecated
-- Use multiple `TileMapLayer` nodes instead
-- Convert legacy TileMaps using:
-  - TileMap bottom panel → “Extract TileMap layers”
-- Access navigation via:
-  - `TileMapLayer.get_navigation_map()`
-- Store layer-specific logic on individual `TileMapLayer` nodes
+- Use `TileMapLayer` instead of deprecated `TileMap`
+- Navigation: `TileMapLayer.get_navigation_map()`
+- Store layer logic on individual layer nodes
 
 ---
 
@@ -284,36 +301,50 @@
 - Do NOT generate speculative documents
 - Update existing docs instead of creating new ones
 
-## Context Usage & Token Optimization
+## User Skill Assumptions (IMPORTANT)
 
-- Minimize token usage in all responses
-- Do NOT restate existing rules or docs
-- Reference rules implicitly, don't repeat them
-- Avoid verbose explanations
-- Prefer short, direct outputs
-- Do NOT create multiple alternatives
-- When editing: show only changed sections, not full files
+- Assume the user is:
+  - Product-oriented (game designer / producer mindset)
+  - NOT a professional programmer, but intelligent and capable
+  - Can understand technical details if explained clearly
+
+- Code explanations must:
+  - Explain product impact first: "This improves X for players because Y"
+  - Then technical details: "Implemented via Z"
+  - Use product reasoning: focus on player experience and game flow
+  - Use system-level explanations: "When player does A → system responds with B"
+
+- Code quality:
+  - Maintain high-quality, optimized code
+  - Technical excellence is expected
+  - User will understand technical details if explained with product context
+
+## Response & Token Policy (CRITICAL)
+
+- Default: concise, direct responses
+- Format:
+  - Bullet points over prose
+  - Code diffs, not full files
+  - Skip intros/conclusions unless clarifying
+  - Show only changed sections when editing
+
+- Do NOT:
+  - Restate existing rules/docs/code
+  - Summarize project context unless requested
+  - Provide multiple alternatives without asking
+  - Repeat confirmations ("готово", "сделано")
+  - Use emoji or marketing language
+
+- When response may exceed ~300 words:
+  - Pause and ask: "Нужна ли детальная объяснение?"
+  - Or provide summary + offer details
+
+- Batch tool calls efficiently
+- Minimize token usage (Sonnet 4.5 context limit)
 
 ## Output Discipline
 
 - Code changes → modify existing files only
-- Documentation required → update existing doc
-- Never create multiple docs for same topic
+- Documentation → update existing docs, don't create new ones
 - Batch related changes in single edit
-- Use StrReplace efficiently (minimal context)
-
-## AI Response Optimization
-
-- Responses in Russian: be concise
-- Show code diffs, not full files
-- Skip explanations user already knows
-- No repeated confirmations ("готово", "сделано")
-- Batch tool calls efficiently
-- No emoji spam
-- No marketing language
-
-## Codebase Indexing
-
-- .cursorignore excludes: .godot/, build/, *.import, *.html, *.wasm
-- Focus on: scripts/, scenes/ (only .gd and .tscn)
-- Ignore generated and exported files
+- Use search_replace efficiently (minimal context)

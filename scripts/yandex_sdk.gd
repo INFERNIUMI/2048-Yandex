@@ -34,6 +34,7 @@ func _init_ad_timeout_timer() -> void:
 	ad_timeout_timer = Timer.new()
 	ad_timeout_timer.one_shot = true
 	ad_timeout_timer.wait_time = 5.0
+	ad_timeout_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 	ad_timeout_timer.timeout.connect(_on_ad_timeout)
 	add_child(ad_timeout_timer)
 
@@ -43,6 +44,7 @@ func _init_rewarded_timeout_timer() -> void:
 	rewarded_timeout_timer = Timer.new()
 	rewarded_timeout_timer.one_shot = true
 	rewarded_timeout_timer.wait_time = 60.0  # 60 сек для rewarded ad
+	rewarded_timeout_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 	rewarded_timeout_timer.timeout.connect(_on_rewarded_timeout)
 	add_child(rewarded_timeout_timer)
 
@@ -128,7 +130,7 @@ func show_fullscreen_ad() -> void:
 	# Устанавливаем callback для возобновления игры
 	# В реальном проекте это будет через JavaScriptBridge callback
 	# Для MVP используем простой таймер
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(2.0, true).timeout
 	_resume_game()
 
 
@@ -206,7 +208,7 @@ func show_rewarded_ad(on_reward: Callable) -> void:
 	
 	# Эмулируем успешный просмотр для MVP
 	# В production это будет через callback из JS
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(2.0, true).timeout
 	_on_rewarded_ad_completed(true)
 
 

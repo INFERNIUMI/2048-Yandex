@@ -19,6 +19,18 @@ export/
 *.zip
 *.apple-touch-icon.png
 *.icon.png
+!build/
+!build/web/
+!build/web/**
+!build/web/**/*.html
+!build/web/**/*.wasm
+!build/web/**/*.pck
+!build/web/**/*.js
+!build/web/**/*.css
+!build/web/**/*.json
+!build/web/**/*.png
+!build/web/**/*.ico
+!build/web/**/*.svg
 
 # OS
 .DS_Store

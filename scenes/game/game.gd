@@ -25,18 +25,18 @@ const ERROR_TRANS: Tween.TransitionType = Tween.TRANS_LINEAR
 # =============================================================================
 
 # Ссылки на узлы
-@onready var grid: Node2D = $GridContainer/Grid
+@onready var grid: Node2D = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer/Grid
 @onready var input_handler: Node = $InputHandler
-@onready var score_value: Label = $UI/TopPanel/ScoreValue
-@onready var best_value: Label = $UI/TopPanel/BestValue
-@onready var restart_button: Button = $UI/TopPanel/RestartButton
+@onready var score_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/ScoreContainer/ScoreValue
+@onready var best_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/BestContainer/BestValue
+@onready var restart_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/RestartButton
 
 # Utility Bar
-@onready var music_button: Button = $UI/UtilityBar/HBox/MusicButton
-@onready var sfx_button: Button = $UI/UtilityBar/HBox/SFXButton
-@onready var help_button: Button = $UI/UtilityBar/HBox/HelpButton
-@onready var undo_button: Button = $UI/UtilityBar/HBox/UndoButton
-@onready var restart_button_2: Button = $UI/UtilityBar/HBox/RestartButton2
+@onready var music_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/MusicButton
+@onready var sfx_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/SFXButton
+@onready var help_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/HelpButton
+@onready var undo_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/UndoButton
+@onready var restart_button_2: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/RestartButton2
 
 # Ссылка на GameManager (синглтон)
 var game_manager: Node = null
@@ -52,6 +52,7 @@ var sfx_enabled: bool = true
 
 # Фиксированная "домашняя" позиция GridContainer (защита от дрифта при спаме)
 var _grid_container_home: Vector2 = Vector2.ZERO
+var grid_container: Control = null
 var _grid_effect_tween: Tween = null
 
 # Game Over: блокировка ввода
@@ -82,7 +83,8 @@ func _ready() -> void:
 	best_value.text = str(game_manager.best_score)
 	
 	# Запоминаем домашнюю позицию GridContainer (защита от дрифта при спаме)
-	_grid_container_home = $GridContainer.position
+	grid_container = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer
+	_grid_container_home = grid_container.position
 	
 	# Начинаем новую игру
 	_start_new_game()
@@ -154,28 +156,28 @@ func _on_game_over_settle_completed() -> void:
 
 # Показ экрана Game Over: overlay → текст → кнопки
 func _show_game_over_screen() -> void:
-	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
-	
-	# Overlay: явные position/size (без конфликта anchors)
+	# Overlay: на весь экран
 	var overlay: ColorRect = ColorRect.new()
 	overlay.name = "GameOverOverlay"
-	overlay.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	overlay.position = Vector2.ZERO
-	overlay.size = viewport_size
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.color = Color(0, 0, 0, 0)
 	
-	# Панель: явные координаты
+	# CenterContainer: центрирует панель
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	
+	# Панель: центрируется автоматически
 	var game_over_panel: Panel = Panel.new()
 	game_over_panel.name = "GameOverPanel"
-	game_over_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	game_over_panel.position = Vector2((viewport_size.x - 500) / 2, (viewport_size.y - 400) / 2 - 50)
 	game_over_panel.custom_minimum_size = Vector2(500, 400)
-	game_over_panel.size = Vector2(500, 400)
 	
+	# VBox внутри панели
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	vbox.position = Vector2(20, 20)
-	vbox.size = Vector2(460, 360)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 20.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
 	vbox.add_theme_constant_override("separation", 24)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	
@@ -199,13 +201,13 @@ func _show_game_over_screen() -> void:
 	if not game_manager.revive_used:
 		var revive_button: Button = Button.new()
 		revive_button.text = "Revive (Watch Ad)"
-		revive_button.custom_minimum_size = Vector2(200, 50)
+		revive_button.custom_minimum_size = Vector2(200, 54)
 		revive_button.pressed.connect(_on_revive_button_pressed.bind(overlay))
 		buttons_container.add_child(revive_button)
 	
 	var restart_game_over_button: Button = Button.new()
 	restart_game_over_button.text = "Restart"
-	restart_game_over_button.custom_minimum_size = Vector2(200, 50)
+	restart_game_over_button.custom_minimum_size = Vector2(200, 54)
 	restart_game_over_button.pressed.connect(_on_restart_from_game_over.bind(overlay))
 	buttons_container.add_child(restart_game_over_button)
 	
@@ -213,9 +215,9 @@ func _show_game_over_screen() -> void:
 	vbox.add_child(final_score_label)
 	vbox.add_child(buttons_container)
 	game_over_panel.add_child(vbox)
-	
-	overlay.add_child(game_over_panel)
-	$UI.add_child(overlay)  # CanvasLayer — overlay поверх всего UI
+	center.add_child(game_over_panel)
+	overlay.add_child(center)
+	$UI.add_child(overlay)
 	
 	# 1. Затемнение фона
 	var tween: Tween = create_tween()
@@ -363,7 +365,7 @@ func _on_help_pressed() -> void:
 
 
 func _show_help_modal() -> void:
-	# Overlay (затемнение) - Control вместо ColorRect
+	# Overlay (затемнение) на весь экран
 	var overlay: Control = Control.new()
 	overlay.name = "HelpOverlay"
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -374,16 +376,23 @@ func _show_help_modal() -> void:
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.add_child(bg)
 	
-	# Modal panel (центрированная)
+	# CenterContainer: центрирует панель
+	var center: CenterContainer = CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.add_child(center)
+	
+	# Modal panel: центрируется автоматически
 	var modal: Panel = Panel.new()
 	modal.custom_minimum_size = Vector2(600, 500)
-	modal.position = Vector2(60, 390)
-	modal.process_mode = Node.PROCESS_MODE_ALWAYS  # Работает при паузе
+	modal.process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	# VBox для контента
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.position = Vector2(20, 20)
-	vbox.size = Vector2(560, 460)
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.offset_left = 20.0
+	vbox.offset_top = 20.0
+	vbox.offset_right = -20.0
+	vbox.offset_bottom = -20.0
 	vbox.add_theme_constant_override("separation", 20)
 	vbox.process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -395,27 +404,28 @@ func _show_help_modal() -> void:
 	
 	# Instructions
 	var instructions: Label = Label.new()
-	instructions.text = """• Swipe or use arrow keys to move tiles
-• Merge identical tiles to score points
-• Try to reach 2048 and get the highest score
-• You can revive once by watching an ad"""
+	instructions.text = """• SWIPE to move all tiles
+   ← → ↑ ↓ (or use arrow keys)
+• MERGE tiles with same numbers to score points
+• GOAL: Reach 2048 tile!
+• BONUS: Watch an ad to revive once
+• TIP: Keep highest tile in corner"""
 	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	instructions.custom_minimum_size = Vector2(560, 200)
+	instructions.size_flags_vertical = 3
 	
 	# Close button
 	var close_btn: Button = Button.new()
 	close_btn.text = "Close"
-	close_btn.custom_minimum_size = Vector2(200, 60)
-	close_btn.process_mode = Node.PROCESS_MODE_ALWAYS  # Работает при паузе
+	close_btn.custom_minimum_size = Vector2(200, 54)
+	close_btn.process_mode = Node.PROCESS_MODE_ALWAYS
 	close_btn.pressed.connect(_close_help_modal.bind(overlay))
 	
 	vbox.add_child(title)
 	vbox.add_child(instructions)
 	vbox.add_child(close_btn)
 	modal.add_child(vbox)
-	overlay.add_child(modal)
+	center.add_child(modal)
 	
-	# Добавляем в UI CanvasLayer (уже существует)
 	$UI.add_child(overlay)
 	get_tree().paused = true
 
@@ -460,13 +470,15 @@ func _stop_grid_effect_and_reset() -> void:
 	if _grid_effect_tween != null and _grid_effect_tween.is_valid():
 		_grid_effect_tween.kill()
 	_grid_effect_tween = null
-	$GridContainer.position = _grid_container_home
+	if grid_container:
+		grid_container.position = _grid_container_home
 
 
 # Pre-Move Nudge: плавное смещение в направлении ввода (ощущение "движение")
 func _input_anticipation_nudge(direction: Vector2i) -> void:
 	_stop_grid_effect_and_reset()
-	var grid_container: Control = $GridContainer
+	if not grid_container:
+		grid_container = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer
 	var nudge_offset: Vector2 = Vector2(direction) * NUDGE_AMPLITUDE
 	
 	_grid_effect_tween = create_tween()
@@ -481,7 +493,8 @@ func _input_anticipation_nudge(direction: Vector2i) -> void:
 # Error Shake: вибрация перпендикулярно направлению ввода (ощущение "упёрлось")
 func _input_rejection_shake(direction: Vector2i) -> void:
 	_stop_grid_effect_and_reset()
-	var grid_container: Control = $GridContainer
+	if not grid_container:
+		grid_container = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer
 	
 	# Перпендикуляр: вверх/вниз → тряска влево-вправо; влево/вправо → тряска вверх-вниз
 	var perp: Vector2 = Vector2(-direction.y, direction.x)
