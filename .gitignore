@@ -5,6 +5,7 @@
 *.translation
 *.cache
 .mono/
+*.md5
 
 # Builds
 build/

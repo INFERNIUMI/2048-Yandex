@@ -49,8 +49,8 @@ func _init_rewarded_timeout_timer() -> void:
 
 # Проверка доступности Yandex SDK
 func _check_sdk_availability() -> void:
-	var sdk_check: String = JavaScriptBridge.eval("typeof ysdk !== 'undefined'")
-	sdk_initialized = sdk_check == "true"
+	var sdk_check = JavaScriptBridge.eval("typeof ysdk !== 'undefined'")
+	sdk_initialized = str(sdk_check) == "true"
 	
 	if DEBUG:
 		if sdk_initialized:

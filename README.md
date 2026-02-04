@@ -16,12 +16,20 @@ scenes/           - Визуальные сцены (3 файла)
 PRODUCT_SPEC.md   - Полное ТЗ
 ```
 
+## Локальное тестирование в браузере
+
+1. Экспорт: Project → Export → Web → путь: `./index.html`
+2. Запуск: `python test_server.py`
+3. Открой: `http://localhost:8000/test_local.html`
+
+Эмулирует Yandex SDK (заглушки для рекламы).
+
 ## Экспорт в Web
 
 1. Project → Export → Web
 2. **Threads: OFF** (критично!)
 3. Memory: 256-384 MB
-4. Export Project → `build/index.html`
+4. Export Project → `index.html` (в корень)
 
 ## Yandex.Игры
 
