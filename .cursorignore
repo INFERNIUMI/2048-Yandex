@@ -25,7 +25,7 @@ Thumbs.db
 # Editor / IDE
 .vscode/
 .idea/
-.cursor/projects/
+test_server.py
 
 # Godot cache
 *.cache
@@ -34,3 +34,7 @@ Thumbs.db
 # Backups
 *.old
 *.backup
+
+
+# Godot UID (генерируются автоматически)
+*.uid
