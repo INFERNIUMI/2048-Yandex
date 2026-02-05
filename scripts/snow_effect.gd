@@ -10,9 +10,7 @@ extends Control
 @export var max_alpha: float = 0.9
 @export var min_font_size: int = 14
 @export var max_font_size: int = 20
-@export var safe_margin: float = 10.0
 @export var fade_height: float = 80.0
-@export var grid_container_path: NodePath
 
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var snow_labels: Array[Label] = []
@@ -21,10 +19,7 @@ var snow_bands: Array[int] = []
 var snow_alphas: Array[float] = []
 var _has_focus: bool = true
 var _viewport_size: Vector2 = Vector2.ZERO
-var _top_limit: float = 0.0
-var _mid_start: float = 0.0
-var _mid_end: float = 0.0
-var _bottom_start: float = 0.0
+var _zone_height: float = 0.0
 
 
 func _ready() -> void:
@@ -64,18 +59,7 @@ func _process(delta: float) -> void:
 
 func _update_bounds() -> void:
 	_viewport_size = get_viewport_rect().size
-	var grid: Control = get_node_or_null(grid_container_path) as Control
-	if grid:
-		var rect: Rect2 = grid.get_global_rect()
-		_top_limit = max(0.0, rect.position.y - safe_margin)
-		_mid_start = rect.position.y - safe_margin
-		_mid_end = rect.position.y + rect.size.y + safe_margin
-		_bottom_start = min(_viewport_size.y, rect.position.y + rect.size.y + safe_margin)
-	else:
-		_top_limit = _viewport_size.y * 0.33
-		_mid_start = _viewport_size.y * 0.33
-		_mid_end = _viewport_size.y * 0.66
-		_bottom_start = _viewport_size.y * 0.66
+	_zone_height = _viewport_size.y / 4.0
 
 
 func _init_snow() -> void:
@@ -136,36 +120,12 @@ func _reset_flake(index: int) -> void:
 	var w: float = rng.randf()
 	label.position.x = _viewport_size.x * (u + v + w) / 3.0
 	
-	match band:
-		0:
-			label.position.y = rng.randf_range(0.0, _top_limit)
-		1:
-			label.position.y = rng.randf_range(_mid_start, _mid_end)
-		2:
-			label.position.y = rng.randf_range(_bottom_start, _viewport_size.y)
+	label.position.y = rng.randf_range(band * _zone_height, (band + 1) * _zone_height)
 
 
 func _pick_band() -> int:
-	var h0: float = _top_limit
-	var h1: float = _mid_end - _mid_start
-	var h2: float = _viewport_size.y - _bottom_start
-	var total: float = h0 + h1 + h2
-	if total <= 0.0:
-		return -1
-	
-	var r: float = rng.randf() * total
-	if r < h0:
-		return 0
-	if r < h0 + h1:
-		return 1
-	return 2
+	return rng.randi_range(0, 3)
 
 
 func _get_band_bottom(band: int) -> float:
-	match band:
-		0:
-			return _top_limit
-		1:
-			return _mid_end
-		_:
-			return _viewport_size.y
+	return (band + 1) * _zone_height
