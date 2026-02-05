@@ -25,9 +25,6 @@ const ERROR_TRANS: Tween.TransitionType = Tween.TRANS_LINEAR
 # --- Glassmorphism (тест — false для отката) ---
 const GLASSMORPHISM_ENABLED: bool = true
 
-# --- Фон: текстура (null = только цвет с Background) ---
-@export var background_texture: Texture2D = null
-
 # =============================================================================
 
 # Ссылки на узлы
@@ -92,15 +89,6 @@ func _ready() -> void:
 	# Glassmorphism (тест — выключить: GLASSMORPHISM_ENABLED = false)
 	if GLASSMORPHISM_ENABLED:
 		ThemeGlass.apply(self)
-	
-	# Фон: картинка (если задана) или цвет с узла Background
-	var bg_tex: TextureRect = get_node_or_null("BackgroundLayer/BackgroundTexture")
-	if bg_tex:
-		if background_texture:
-			bg_tex.texture = background_texture
-		if bg_tex.texture:
-			bg_tex.visible = true
-			get_node("BackgroundLayer/Background").visible = false
 
 	# Начинаем новую игру
 	_start_new_game()

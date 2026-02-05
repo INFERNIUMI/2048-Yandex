@@ -19,16 +19,6 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.5713511, 0.50872284, 0.45698634, 1)
 
-[node name="BackgroundTexture" type="TextureRect" parent="BackgroundLayer" unique_id=830944969]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 5
-
 [node name="SnowLayer" type="CanvasLayer" parent="." unique_id=1865302115]
 layer = -1
 
