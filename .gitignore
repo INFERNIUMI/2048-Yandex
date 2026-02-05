@@ -31,6 +31,17 @@ export/
 !build/web/**/*.png
 !build/web/**/*.ico
 !build/web/**/*.svg
+!docs/
+!docs/**
+!docs/**/*.html
+!docs/**/*.wasm
+!docs/**/*.pck
+!docs/**/*.js
+!docs/**/*.css
+!docs/**/*.json
+!docs/**/*.png
+!docs/**/*.ico
+!docs/**/*.svg
 
 # OS
 .DS_Store
