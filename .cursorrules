@@ -328,6 +328,8 @@ func _on_ad_end() -> void:
   - Skip intros/conclusions unless clarifying
   - Show only changed sections when editing
 
+- **After edits: do NOT repeat the diff in the response.** User sees changes in the editor. One line summary only, e.g. "Изменён game.gd: попап в UI, анимация по Y."
+
 - Do NOT:
   - Restate existing rules/docs/code
   - Summarize project context unless requested

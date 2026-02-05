@@ -22,21 +22,26 @@ const ERROR_JERKS: int = 3                # кол-во рывков (2–3)
 const ERROR_EASING: Tween.EaseType = Tween.EASE_IN_OUT
 const ERROR_TRANS: Tween.TransitionType = Tween.TRANS_LINEAR
 
+# --- Glassmorphism (тест — false для отката) ---
+const GLASSMORPHISM_ENABLED: bool = true
+
+# --- Фон: текстура (null = только цвет с Background) ---
+@export var background_texture: Texture2D = null
+
 # =============================================================================
 
 # Ссылки на узлы
 @onready var grid: Node2D = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer/Grid
 @onready var input_handler: Node = $InputHandler
-@onready var score_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/ScoreContainer/ScoreValue
-@onready var best_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/BestContainer/BestValue
-@onready var restart_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/RestartButton
+@onready var score_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/ScorePanel/ScoreContainer/ScoreValue
+@onready var score_container: VBoxContainer = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/ScorePanel/ScoreContainer
+@onready var best_value: Label = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/BestPanel/BestContainer/BestValue
+@onready var restart_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/RestartButton
 
-# Utility Bar
-@onready var music_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/MusicButton
-@onready var sfx_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/SFXButton
-@onready var help_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/HelpButton
-@onready var undo_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/UndoButton
-@onready var restart_button_2: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox/RestartButton2
+# Top Bar controls
+@onready var music_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/LeftGroup/MusicButton
+@onready var help_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/LeftGroup/HelpButton
+@onready var undo_button: Button = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/RightGroup/UndoButton
 
 # Ссылка на GameManager (синглтон)
 var game_manager: Node = null
@@ -46,9 +51,8 @@ var pre_move_grid_state: Array = []
 var pre_move_score: int = 0
 var pre_move_best_score: int = 0
 
-# Audio state (архитектура для возможного объединения)
+# Audio state
 var music_enabled: bool = true
-var sfx_enabled: bool = true
 
 # Фиксированная "домашняя" позиция GridContainer (защита от дрифта при спаме)
 var _grid_container_home: Vector2 = Vector2.ZERO
@@ -70,14 +74,13 @@ func _ready() -> void:
 	grid.game_over_settle_completed.connect(_on_game_over_settle_completed)
 	grid.move_completed.connect(_on_move_completed)
 	grid.combo_triggered.connect(_on_combo_triggered)
+	grid.merge_popup_requested.connect(_on_merge_popup_requested)
 	restart_button.pressed.connect(_on_restart_pressed)
 	
-	# Utility Bar
+	# Top Bar controls
 	music_button.pressed.connect(_on_music_toggle)
-	sfx_button.pressed.connect(_on_sfx_toggle)
 	help_button.pressed.connect(_on_help_pressed)
 	undo_button.pressed.connect(_on_undo_pressed)
-	restart_button_2.pressed.connect(_on_restart_pressed)
 	
 	# Обновляем Best Score
 	best_value.text = str(game_manager.best_score)
@@ -86,6 +89,19 @@ func _ready() -> void:
 	grid_container = $UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer
 	_grid_container_home = grid_container.position
 	
+	# Glassmorphism (тест — выключить: GLASSMORPHISM_ENABLED = false)
+	if GLASSMORPHISM_ENABLED:
+		ThemeGlass.apply(self)
+	
+	# Фон: картинка (если задана) или цвет с узла Background
+	var bg_tex: TextureRect = get_node_or_null("BackgroundLayer/BackgroundTexture")
+	if bg_tex:
+		if background_texture:
+			bg_tex.texture = background_texture
+		if bg_tex.texture:
+			bg_tex.visible = true
+			get_node("BackgroundLayer/Background").visible = false
+
 	# Начинаем новую игру
 	_start_new_game()
 
@@ -131,6 +147,45 @@ func _on_score_updated(points: int) -> void:
 	score_value.text = str(game_manager.current_score)
 	best_value.text = str(game_manager.best_score)
 	_update_undo_button()
+
+
+# ===== ТЕСТОВАЯ ФИЧА: MERGE POPUP =====
+const MERGE_POPUP_DURATION: float = 1.10
+const MERGE_POPUP_RISE: float = 20.0
+const MERGE_POPUP_FONT_SIZE: int = 25
+# ======================================
+
+func _on_merge_popup_requested(points: int, multiplier: int) -> void:
+	var popup: Label = Label.new()
+	var display_points: int = points
+	if grid.FEATURE_COMBO_ENABLED and multiplier > 1:
+		display_points = points * multiplier
+		popup.text = tr("game.points_combo") % [display_points, multiplier]
+	else:
+		popup.text = tr("game.points") % display_points
+	
+	popup.add_theme_font_size_override("font_size", MERGE_POPUP_FONT_SIZE)
+	popup.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	popup.modulate = Color(1, 1, 1, 1)
+	popup.z_index = 10
+	
+	# Позиция в глобальных координатах UI (центр ScoreContainer, смещено вверх и вправо)
+	var container_global_pos: Vector2 = score_container.global_position
+	var container_size: Vector2 = score_container.size
+	var start_pos: Vector2 = container_global_pos + Vector2(container_size.x * 0.5 + 20, container_size.y * 0.5 - 10)
+	popup.position = start_pos
+	
+	# Добавляем в UI слой, чтобы попап был независим от контейнера
+	$UI.add_child(popup)
+	
+	var tween: Tween = create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_QUAD)
+	tween.tween_property(popup, "position:y", start_pos.y - MERGE_POPUP_RISE, MERGE_POPUP_DURATION)
+	tween.parallel().tween_property(popup, "modulate", Color(1, 1, 1, 0), MERGE_POPUP_DURATION)
+	tween.tween_callback(popup.queue_free)
+# ======================================
 
 
 # Game Over
@@ -182,13 +237,13 @@ func _show_game_over_screen() -> void:
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	
 	var game_over_label: Label = Label.new()
-	game_over_label.text = "Game Over"
+	game_over_label.text = tr("game.game_over")
 	game_over_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	game_over_label.add_theme_font_size_override("font_size", 48)
 	game_over_label.modulate.a = 0
 	
 	var final_score_label: Label = Label.new()
-	final_score_label.text = "Score: " + str(game_manager.current_score)
+	final_score_label.text = tr("game.final_score") % game_manager.current_score
 	final_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	final_score_label.add_theme_font_size_override("font_size", 32)
 	final_score_label.modulate.a = 0
@@ -200,13 +255,13 @@ func _show_game_over_screen() -> void:
 	
 	if not game_manager.revive_used:
 		var revive_button: Button = Button.new()
-		revive_button.text = "Revive (Watch Ad)"
+		revive_button.text = tr("game.revive")
 		revive_button.custom_minimum_size = Vector2(200, 54)
 		revive_button.pressed.connect(_on_revive_button_pressed.bind(overlay))
 		buttons_container.add_child(revive_button)
 	
 	var restart_game_over_button: Button = Button.new()
-	restart_game_over_button.text = "Restart"
+	restart_game_over_button.text = tr("ui.restart")
 	restart_game_over_button.custom_minimum_size = Vector2(200, 54)
 	restart_game_over_button.pressed.connect(_on_restart_from_game_over.bind(overlay))
 	buttons_container.add_child(restart_game_over_button)
@@ -268,7 +323,7 @@ func _on_revive_granted(game_over_overlay: Control) -> void:
 # Визуальный эффект Revive
 func _show_revive_effect() -> void:
 	var effect_label: Label = Label.new()
-	effect_label.text = "Tiles Cleared!"
+	effect_label.text = tr("game.tiles_cleared")
 	effect_label.add_theme_font_size_override("font_size", 56)
 	effect_label.modulate = Color(1, 0.8, 0, 1)  # Золотой цвет
 	effect_label.position = Vector2(200, 500)
@@ -297,7 +352,7 @@ func _on_combo_triggered(multiplier: int) -> void:
 	await get_tree().create_timer(COMBO_DELAY_AFTER_MERGE).timeout
 	
 	var combo_label: Label = Label.new()
-	combo_label.text = "COMBO x%d" % multiplier
+	combo_label.text = tr("game.combo") % multiplier
 	combo_label.add_theme_font_size_override("font_size", 64)
 	
 	# Цвет в зависимости от множителя
@@ -343,20 +398,13 @@ func _screen_pulse() -> void:
 # ====================================
 
 
-# ===== UTILITY BAR =====
+# ===== TOP BAR CONTROLS =====
 
 # Music toggle
 func _on_music_toggle() -> void:
 	music_enabled = !music_enabled
-	music_button.text = "🎵 Music" if music_enabled else "🎵 OFF"
+	music_button.text = tr("ui.music_on") if music_enabled else tr("ui.music_off")
 	# TODO: управление фоновой музыкой (когда добавится)
-
-
-# SFX toggle
-func _on_sfx_toggle() -> void:
-	sfx_enabled = !sfx_enabled
-	sfx_button.text = "🔊 SFX" if sfx_enabled else "🔊 OFF"
-	# TODO: управление звуковыми эффектами (когда добавятся)
 
 
 # Help modal
@@ -398,24 +446,19 @@ func _show_help_modal() -> void:
 	
 	# Title
 	var title: Label = Label.new()
-	title.text = "How to Play"
+	title.text = tr("overlay.how_to_play")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
 	
 	# Instructions
 	var instructions: Label = Label.new()
-	instructions.text = """• SWIPE to move all tiles
-   ← → ↑ ↓ (or use arrow keys)
-• MERGE tiles with same numbers to score points
-• GOAL: Reach 2048 tile!
-• BONUS: Watch an ad to revive once
-• TIP: Keep highest tile in corner"""
+	instructions.text = tr("overlay.instructions")
 	instructions.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	instructions.size_flags_vertical = 3
 	
 	# Close button
 	var close_btn: Button = Button.new()
-	close_btn.text = "Close"
+	close_btn.text = tr("overlay.close")
 	close_btn.custom_minimum_size = Vector2(200, 54)
 	close_btn.process_mode = Node.PROCESS_MODE_ALWAYS
 	close_btn.pressed.connect(_close_help_modal.bind(overlay))

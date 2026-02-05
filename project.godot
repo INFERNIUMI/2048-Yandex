@@ -60,6 +60,13 @@ ui_down={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://translations/translations.en.translation", "res://translations/translations.ru.translation", "res://translations/translations.tr.translation", "res://translations/translations.es.translation")
+locale/test="ru"
+locale/locale_filter_mode=1
+locale/locale_filter=PackedStringArray("en", "es", "ru", "tr")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

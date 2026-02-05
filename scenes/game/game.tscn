@@ -3,19 +3,49 @@
 [ext_resource type="Script" uid="uid://b2yvtdhojr2ha" path="res://scenes/game/game.gd" id="1_game"]
 [ext_resource type="Script" uid="uid://d1630nlpyc4cq" path="res://scripts/grid.gd" id="2_grid"]
 [ext_resource type="Script" uid="uid://dwlytar34s61" path="res://scripts/input_handler.gd" id="3_input"]
+[ext_resource type="Script" uid="uid://4mtjfg4ctd5k" path="res://scripts/snow_effect.gd" id="4_snow"]
 
 [node name="Game" type="Node2D" unique_id=332474648]
 script = ExtResource("1_game")
 
-[node name="Background" type="ColorRect" parent="." unique_id=2040254989]
+[node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=2040254988]
+layer = -2
+
+[node name="Background" type="ColorRect" parent="BackgroundLayer" unique_id=2040254989]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.980392, 0.968627, 0.941176, 1)
+color = Color(0.5713511, 0.50872284, 0.45698634, 1)
+
+[node name="BackgroundTexture" type="TextureRect" parent="BackgroundLayer" unique_id=830944969]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SnowLayer" type="CanvasLayer" parent="." unique_id=1865302115]
+layer = -1
+
+[node name="SnowRoot" type="Control" parent="SnowLayer" unique_id=1865302116]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_snow")
+flake_color = Color(0.92078024, 0.960177, 0.9999998, 1)
+grid_container_path = NodePath("../../UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=729337414]
+layer = 0
 
 [node name="CenterContainer" type="CenterContainer" parent="UI" unique_id=895632795]
 anchors_preset = 15
@@ -44,96 +74,133 @@ theme_override_constants/margin_bottom = 20
 [node name="MainVBox" type="VBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea" unique_id=1400081445]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/separation = 16
 
-[node name="TopPanel" type="Panel" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=895632797]
-custom_minimum_size = Vector2(0, 140)
+[node name="TopBar" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=895632797]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="LeftGroup" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar" unique_id=1400081447]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_constants/separation = 8
+
+[node name="MusicButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/LeftGroup" unique_id=822996138]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+text = "ui.music_on"
+
+[node name="HelpButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/LeftGroup" unique_id=1894581838]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+text = "ui.help"
+
+[node name="Spacer1" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar" unique_id=1400081448]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TopHBox" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel" unique_id=1400081447]
+[node name="RestartButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar" unique_id=268000344]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "ui.restart"
+
+[node name="Spacer2" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar" unique_id=1400081450]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightGroup" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar" unique_id=1400081451]
+layout_mode = 2
+size_flags_horizontal = 0
+alignment = 2
+
+[node name="UndoButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopBar/RightGroup" unique_id=640417598]
+custom_minimum_size = Vector2(56, 56)
+layout_mode = 2
+text = "ui.undo"
+
+[node name="ScoreArea" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=1830029552]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="BestPanel" type="Panel" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea" unique_id=1400081449]
+custom_minimum_size = Vector2(140, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BestContainer" type="VBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/BestPanel" unique_id=908001978]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
+alignment = 1
 
-[node name="Title" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox" unique_id=1830029552]
+[node name="BestLabel" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/BestPanel/BestContainer" unique_id=908001979]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.933333, 0.964706, 0.952941, 1)
+theme_override_font_sizes/font_size = 13
+text = "ui.best"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="BestValue" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/BestPanel/BestContainer" unique_id=278670819]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+text = "0"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea" unique_id=672091186]
+custom_minimum_size = Vector2(12, 0)
 layout_mode = 2
 size_flags_horizontal = 0
-theme_override_font_sizes/font_size = 48
-text = "2048"
 
-[node name="Spacer1" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox" unique_id=1400081448]
+[node name="ScorePanel" type="Panel" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea" unique_id=672091187]
+custom_minimum_size = Vector2(140, 64)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScoreContainer" type="VBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox" unique_id=1400081449]
-layout_mode = 2
-size_flags_horizontal = 0
-alignment = 1
-
-[node name="ScoreLabel" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/ScoreContainer" unique_id=672091187]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
-text = "SCORE"
-horizontal_alignment = 1
-
-[node name="ScoreValue" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/ScoreContainer" unique_id=2122607862]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 36
-text = "0"
-horizontal_alignment = 1
-
-[node name="Spacer2" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox" unique_id=1400081450]
-custom_minimum_size = Vector2(20, 0)
-layout_mode = 2
-size_flags_horizontal = 0
-
-[node name="BestContainer" type="VBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox" unique_id=1400081451]
-layout_mode = 2
-size_flags_horizontal = 0
-alignment = 1
-
-[node name="BestLabel" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/BestContainer" unique_id=908001979]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
-text = "BEST"
-horizontal_alignment = 1
-
-[node name="BestValue" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel/TopHBox/BestContainer" unique_id=278670819]
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 36
-text = "0"
-horizontal_alignment = 1
-
-[node name="RestartButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/TopPanel" unique_id=268000344]
-custom_minimum_size = Vector2(140, 44)
+[node name="ScoreContainer" type="VBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/ScorePanel" unique_id=2122607861]
 layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -50.0
-offset_right = 150.0
-offset_bottom = -10.0
-grow_vertical = 0
-text = "Restart"
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/ScorePanel/ScoreContainer" unique_id=2122607862]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.933333, 0.964706, 0.952941, 1)
+theme_override_font_sizes/font_size = 13
+text = "ui.score"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="ScoreValue" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/ScoreArea/ScorePanel/ScoreContainer" unique_id=672091188]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 25
+text = "0"
+horizontal_alignment = 1
 
 [node name="GameFieldContainer" type="CenterContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=527233928]
 layout_mode = 2
 size_flags_vertical = 3
 
 [node name="GridContainer" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer" unique_id=527233929]
-custom_minimum_size = Vector2(680, 680)
+clip_children = 1
+custom_minimum_size = Vector2(720, 720)
 layout_mode = 2
 size_flags_horizontal = 0
 
@@ -145,57 +212,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Grid" type="Node2D" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer" unique_id=375720166]
-position = Vector2(20, 20)
-script = ExtResource("2_grid")
-
-[node name="UtilityBar" type="Panel" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=250289493]
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HBox" type="HBoxContainer" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar" unique_id=1400081446]
-layout_mode = 1
-anchors_preset = 15
+[node name="GridSlots" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer" unique_id=1926417920]
+anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = -10.0
-offset_bottom = -10.0
 grow_horizontal = 2
 grow_vertical = 2
-alignment = 1
 
-[node name="MusicButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox" unique_id=822996138]
-custom_minimum_size = Vector2(44, 44)
+[node name="Grid" type="Node2D" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/GameFieldContainer/GridContainer" unique_id=375720166]
+script = ExtResource("2_grid")
+
+[node name="HintText" type="Label" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=250289493]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "🎵 Music"
+theme_override_colors/font_color = Color(0.733333, 0.678431, 0.627451, 1)
+theme_override_font_sizes/font_size = 14
+text = "ui.hint"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="SFXButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox" unique_id=799198349]
-custom_minimum_size = Vector2(44, 44)
+[node name="BottomSpacer" type="Control" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox" unique_id=1400081446]
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "🔊 SFX"
-
-[node name="HelpButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox" unique_id=1894581838]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ℹ️ Help"
-
-[node name="UndoButton" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox" unique_id=640417598]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "↶ Undo"
-
-[node name="RestartButton2" type="Button" parent="UI/CenterContainer/ContentContainer/SafeArea/MainVBox/UtilityBar/HBox" unique_id=985804404]
-custom_minimum_size = Vector2(44, 44)
-layout_mode = 2
-size_flags_horizontal = 3
-text = "⟳ Restart"
 
 [node name="InputHandler" type="Node" parent="." unique_id=1564980764]
 script = ExtResource("3_input")

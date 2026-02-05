@@ -6,7 +6,7 @@ extends Node2D
 var value: int = 2
 
 # Ссылки на UI элементы (будут заполнены в _ready)
-@onready var background: ColorRect = $Background
+@onready var background: Panel = $Background
 @onready var label: Label = $Label
 
 # Цвета для разных значений плиток
@@ -43,22 +43,37 @@ func _update_appearance() -> void:
 	if not background or not label:
 		return
 	
+	# Создаем StyleBoxFlat с закругленными углами
+	var style := StyleBoxFlat.new()
+	
 	# Устанавливаем цвет фона
 	if TILE_COLORS.has(value):
-		background.color = TILE_COLORS[value]
+		style.bg_color = TILE_COLORS[value]
 	else:
-		background.color = DEFAULT_COLOR
+		style.bg_color = DEFAULT_COLOR
+	
+	# Закругленные углы (совпадает со слотами)
+	style.set_corner_radius_all(8)
+	
+	# Применяем стиль
+	background.add_theme_stylebox_override("panel", style)
+	
+	# Цвет текста: темный для светлых плиток (2, 4), светлый для остальных
+	if value <= 4:
+		label.add_theme_color_override("font_color", Color("#776E65"))
+	else:
+		label.add_theme_color_override("font_color", Color("#F9F6F2"))
 	
 	# Устанавливаем текст
 	label.text = str(value)
 	
 	# Размер шрифта в зависимости от количества цифр
 	if value < 100:
-		label.add_theme_font_size_override("font_size", 48)
+		label.add_theme_font_size_override("font_size", 54)
 	elif value < 1000:
-		label.add_theme_font_size_override("font_size", 40)
+		label.add_theme_font_size_override("font_size", 46)
 	else:
-		label.add_theme_font_size_override("font_size", 32)
+		label.add_theme_font_size_override("font_size", 36)
 
 
 # Анимация появления (scale up from 0 to 1)

@@ -1,0 +1,42 @@
+keys,en,ru,tr,es
+ui.title,2048,2048,2048,2048
+ui.score,SCORE,ОЧКИ,SKOR,PUNTOS
+ui.best,BEST,РЕКОРД,EN İYİ,MEJOR
+ui.restart,⟲ ,⟲ ,⟲ ,⟲ 
+ui.music_on,🔈 ,🔈 ,🔈 ,🔈 
+ui.music_off,Music OFF,Музыка ВЫКЛ,Müzik KAPALI,Música OFF
+ui.sfx_on,SFX,Звуки,SES,SFX
+ui.sfx_off,SFX OFF,Звуки ВЫКЛ,SES KAPALI,SFX OFF
+ui.help,? ,? ,? ,? 
+ui.undo,↶ ,↶ ,↶ ,↶ 
+ui.hint,Swipe to move tiles. Get 2048 and more!,Свайпай для перемещения. Собери 2048 и больше!,Kaydır ve 2048'e ulaş!,¡Desliza y alcanza 2048!
+game.game_over,Game Over,Игра окончена,Oyun Bitti,Fin del Juego
+game.final_score,Score: %s,Счёт: %s,Skor: %s,Puntos: %s
+game.revive,Revive (Watch Ad),Оживить (Реклама),Canlan (Reklam İzle),Revivir (Ver Anuncio)
+game.tiles_cleared,Tiles Cleared!,Плитки очищены!,Karolar Temizlendi!,¡Fichas Limpiadas!
+game.combo,COMBO x%d,КОМБО x%d,KOMBO x%d,COMBO x%d
+game.points_combo,+%d x%d,+%d x%d,+%d x%d,+%d x%d
+game.points,+%d,+%d,+%d,+%d
+overlay.how_to_play,How to Play,Как играть,Nasıl Oynanır,Cómo Jugar
+overlay.close,Close,Закрыть,Kapat,Cerrar
+overlay.instructions,"• SWIPE to move all tiles
+   ← → ↑ ↓ (or use arrow keys)
+• MERGE tiles with same numbers to score points
+• GOAL: Reach 2048 tile!
+• BONUS: Watch an ad to revive once
+• TIP: Keep highest tile in corner","• СВАЙП для перемещения плиток
+   ← → ↑ ↓ (или стрелки на клавиатуре)
+• СОЕДИНЯЙ плитки с одинаковыми числами
+• ЦЕЛЬ: Собери плитку 2048!
+• БОНУС: Посмотри рекламу для возрождения
+• СОВЕТ: Держи большую плитку в углу","• Karoları hareket ettirmek için KAYDIR
+   ← → ↑ ↓ (veya ok tuşları)
+• Puan kazanmak için aynı sayıları BİRLEŞTİR
+• HEDEF: 2048 karosuna ulaş!
+• BONUS: Canlanmak için reklam izle
+• İPUCU: En büyük karoyu köşede tut","• DESLIZA para mover las fichas
+   ← → ↑ ↓ (o usa las flechas)
+• COMBINA fichas con los mismos números
+• META: ¡Alcanza la ficha 2048!
+• BONUS: Mira un anuncio para revivir
+• CONSEJO: Mantén la ficha más alta en la esquina"

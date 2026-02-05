@@ -8,11 +8,14 @@ signal game_over
 signal move_completed
 signal combo_triggered(multiplier: int)  # Для визуального эффекта
 signal game_over_settle_completed  # После micro-settle эффекта
+signal merge_popup_requested(points: int, multiplier: int)  # Для попапа у счета
 
 # Константы
 const GRID_SIZE: int = 4
-const TILE_SIZE: int = 150
-const TILE_SPACING: int = 20
+const TILE_SIZE: int = 160
+const TILE_SPACING: int = 18
+const SLOT_RADIUS: float = 8.0
+const SLOT_COLOR: Color = Color("#8B8074")
 const SPAWN_PROBABILITY_4: float = 0.1  # 10% шанс появления 4
 const DEBUG: bool = true
 
@@ -32,6 +35,8 @@ const GAME_OVER_SETTLE_DURATION: float = 0.30 # 150–250 ms
 # Сетка плиток (двумерный массив)
 var tiles: Array[Array] = []
 
+@onready var slots_layer: Control = get_parent().get_node("GridSlots") as Control
+
 # Сцена плитки (будет загружена позже)
 var tile_scene: PackedScene = null
 
@@ -47,6 +52,7 @@ var points_accumulated_this_turn: int = 0  # Накопленные очки з�
 func _ready() -> void:
 	_init_grid()
 	tile_scene = preload("res://scenes/tile/tile.tscn")
+	_create_slot_grid()
 
 
 # Инициализация пустой сетки
@@ -57,6 +63,26 @@ func _init_grid() -> void:
 		for y in GRID_SIZE:
 			column.append(null)
 		tiles.append(column)
+
+
+func _create_slot_grid() -> void:
+	if slots_layer == null:
+		return
+	
+	for x in GRID_SIZE:
+		for y in GRID_SIZE:
+			var center := _get_tile_position(x, y)
+			var half := TILE_SIZE / 2.0
+			var slot_panel := Panel.new()
+			slot_panel.position = Vector2(center.x - half, center.y - half)
+			slot_panel.size = Vector2(TILE_SIZE, TILE_SIZE)
+			
+			var style := StyleBoxFlat.new()
+			style.bg_color = SLOT_COLOR
+			style.set_corner_radius_all(SLOT_RADIUS)
+			slot_panel.add_theme_stylebox_override("panel", style)
+			
+			slots_layer.add_child(slot_panel)
 
 
 # Начало новой игры
@@ -120,11 +146,15 @@ func _create_tile(x: int, y: int, value: int, animate: bool = true) -> void:
 
 # Получение позиции плитки на экране
 func _get_tile_position(x: int, y: int) -> Vector2:
-	var offset: float = (TILE_SIZE + TILE_SPACING) / 2.0
+	var grid_total: float = GRID_SIZE * (TILE_SIZE + TILE_SPACING) - TILE_SPACING
+	var padding: float = (720.0 - grid_total) / 2.0
+	var offset: float = padding + TILE_SIZE / 2.0
 	return Vector2(
 		x * (TILE_SIZE + TILE_SPACING) + offset,
 		y * (TILE_SIZE + TILE_SPACING) + offset
 	)
+
+
 
 
 # Обработка хода (направление: UP, DOWN, LEFT, RIGHT)
@@ -204,6 +234,15 @@ func _move_up() -> bool:
 					tiles[x][current_y - 1].set_value(new_value)
 					tiles[x][current_y - 1].animate_merge(new_value)
 					
+					var combo_multiplier: int = 1
+					if FEATURE_COMBO_ENABLED:
+						var predicted_merges: int = merge_count_this_turn + 1
+						if predicted_merges >= 3:
+							combo_multiplier = 3
+						elif predicted_merges >= 2:
+							combo_multiplier = 2
+					merge_popup_requested.emit(new_value, combo_multiplier)
+					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
 						merge_count_this_turn += 1
@@ -249,6 +288,15 @@ func _move_down() -> bool:
 					var new_value: int = tiles[x][current_y + 1].value * 2
 					tiles[x][current_y + 1].set_value(new_value)
 					tiles[x][current_y + 1].animate_merge(new_value)
+					
+					var combo_multiplier: int = 1
+					if FEATURE_COMBO_ENABLED:
+						var predicted_merges: int = merge_count_this_turn + 1
+						if predicted_merges >= 3:
+							combo_multiplier = 3
+						elif predicted_merges >= 2:
+							combo_multiplier = 2
+					merge_popup_requested.emit(new_value, combo_multiplier)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
@@ -296,6 +344,15 @@ func _move_left() -> bool:
 					tiles[current_x - 1][y].set_value(new_value)
 					tiles[current_x - 1][y].animate_merge(new_value)
 					
+					var combo_multiplier: int = 1
+					if FEATURE_COMBO_ENABLED:
+						var predicted_merges: int = merge_count_this_turn + 1
+						if predicted_merges >= 3:
+							combo_multiplier = 3
+						elif predicted_merges >= 2:
+							combo_multiplier = 2
+					merge_popup_requested.emit(new_value, combo_multiplier)
+					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
 						merge_count_this_turn += 1
@@ -341,6 +398,15 @@ func _move_right() -> bool:
 					var new_value: int = tiles[current_x + 1][y].value * 2
 					tiles[current_x + 1][y].set_value(new_value)
 					tiles[current_x + 1][y].animate_merge(new_value)
+					
+					var combo_multiplier: int = 1
+					if FEATURE_COMBO_ENABLED:
+						var predicted_merges: int = merge_count_this_turn + 1
+						if predicted_merges >= 3:
+							combo_multiplier = 3
+						elif predicted_merges >= 2:
+							combo_multiplier = 2
+					merge_popup_requested.emit(new_value, combo_multiplier)
 					
 					# ===== COMBO: учитываем merge и накапливаем очки =====
 					if FEATURE_COMBO_ENABLED:
